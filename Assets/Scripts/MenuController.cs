@@ -17,7 +17,7 @@ public class MenuController : MonoBehaviour
         {
             if (eachChild.name != "Score")
             {
-                Debug.Log("Child found. Name: " + eachChild.name);
+                //Debug.Log("Child found. Name: " + eachChild.name);
                 // disable them
                 eachChild.gameObject.SetActive(false);
                 Time.timeScale = 1.0f;

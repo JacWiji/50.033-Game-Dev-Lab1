@@ -19,7 +19,9 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D marioBody;
     private SpriteRenderer marioSprite;
-    // Start is called before the first frame update
+    private  Animator marioAnimator;
+    private AudioSource marioAudio;
+
 
     private bool onGroundState = true;
     private bool faceRightState = true;
@@ -36,6 +38,8 @@ public class PlayerController : MonoBehaviour
         Application.targetFrameRate =  30;
         marioBody = GetComponent<Rigidbody2D>();
         marioSprite = GetComponent<SpriteRenderer>();
+        marioAnimator  =  GetComponent<Animator>();
+        marioAudio=GetComponent<AudioSource>();
     }
 
     
@@ -57,6 +61,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown("space") && onGroundState){
           marioBody.AddForce(Vector2.up *upSpeed, ForceMode2D.Impulse);
           onGroundState = false;
+          marioAnimator.SetBool("onGround", onGroundState);
           countScoreState = true;
           
       }
@@ -68,9 +73,15 @@ public class PlayerController : MonoBehaviour
         if (col.gameObject.CompareTag("Ground"))
         {
             onGroundState = true;
+            marioAnimator.SetBool("onGround", onGroundState);
             countScoreState = false;
             scoreText.text = "Score: " + score.ToString();
             
+        }
+        if (col.gameObject.CompareTag("Obstacles") && Mathf.Abs(marioBody.velocity.y) < 0.01f)
+        {
+            onGroundState = true;
+            marioAnimator.SetBool("onGround", onGroundState);
         }
     }
 
@@ -81,8 +92,11 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Collided with Gomba!");
             Time.timeScale = 0.0f;
             
-            SceneManager.LoadScene("SampleScene");
+            //SceneManager.LoadScene("SampleScene");
         }
+    }
+    void  PlayJumpSound(){
+        marioAudio.PlayOneShot(marioAudio.clip);
     }
 
     // Update is called once per frame
@@ -91,12 +105,20 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown("a") && faceRightState){
           faceRightState = false;
           marioSprite.flipX = true;
+          if (Mathf.Abs(marioBody.velocity.x) >  1.0){
+              marioAnimator.SetTrigger("onSkid");
+            }
         }
 
         if (Input.GetKeyDown("d") && !faceRightState){
             faceRightState = true;
             marioSprite.flipX = false;
+            if (Mathf.Abs(marioBody.velocity.x) >  1.0){
+                marioAnimator.SetTrigger("onSkid");
+            }
         }
+        marioAnimator.SetFloat("xSpeed", Mathf.Abs(marioBody.velocity.x));
+
         if (!onGroundState && countScoreState)
         {
             if (Mathf.Abs(transform.position.x - enemyLocation.position.x) < 0.5f)
